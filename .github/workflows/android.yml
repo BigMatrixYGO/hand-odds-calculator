@@ -1,4 +1,4 @@
-name: Build APK (Kivy Stable)
+name: Build APK (Docker)
 
 on:
   workflow_dispatch:
@@ -11,36 +11,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install system dependencies
+      - name: Build APK using Buildozer Docker
         run: |
-          sudo apt update
-          sudo apt install -y \
-          git zip unzip openjdk-17-jdk \
-          python3-pip \
-          autoconf libtool pkg-config \
-          zlib1g-dev libncurses5-dev \
-          libncursesw5-dev libtinfo5 \
-          cmake libffi-dev libssl-dev
-
-      - name: Install Buildozer
-        run: |
-          pip install --upgrade pip
-          pip install buildozer cython
-
-      - name: Install Android SDK + accept licenses
-        run: |
-          mkdir -p $HOME/android-sdk
-          export ANDROID_SDK_ROOT=$HOME/android-sdk
-          echo "y" | sdkmanager --licenses || true
-
-      - name: Build APK
-        run: |
-          buildozer -v android debug
+          docker run --rm -v $PWD:/home/user/app \
+          kivy/buildozer buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
